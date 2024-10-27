@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'  # Use 3.8 or later for better compatibility
 
 services:
   postgres:
@@ -30,6 +30,14 @@ services:
     networks:
       - postgres_network
     restart: unless-stopped
+
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - postgres_network  # Updated to match the correct network
 
 networks:
   postgres_network:

@@ -7,6 +7,8 @@ import com.example.JobMS.Jobs.Job;
 import com.example.JobMS.Jobs.JobRepository;
 import com.example.JobMS.Jobs.JobService;
 import com.example.JobMS.Jobs.Mapper.JobMapper;
+import com.example.JobMS.Jobs.clients.CompanyClient;
+import com.example.JobMS.Jobs.clients.ReviewClient;
 import com.example.JobMS.Jobs.dto.JobDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
@@ -27,8 +29,13 @@ public class JobServiceImpl implements JobService {
     @Autowired
     RestTemplate restTemplate ;
 
-    public JobServiceImpl(JobRepository jobRepository) {
+    private CompanyClient companyClient;
+    private ReviewClient reviewclient;
+
+    public JobServiceImpl(JobRepository jobRepository , CompanyClient companyClient , ReviewClient reviewclient) {
         this.jobRepository = jobRepository;
+        this.companyClient = companyClient;
+        this.reviewclient = reviewclient;
     }
 
     private Long nestID = 1l;
@@ -37,10 +44,6 @@ public class JobServiceImpl implements JobService {
          List<Job> jobs = jobRepository.findAll();
          List<JobDTO> jobWithCompanyDTOS = new ArrayList<>();
 
-
-
-
-
         return jobs.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
@@ -48,13 +51,12 @@ public class JobServiceImpl implements JobService {
 
 
 
-        Company comapny = restTemplate.getForObject("http://COMPANY-SERVICE:8081/companies/" + job.getCompany(), Company.class);
+        Company comapny = companyClient.getCompany(job.getCompany());
 
-        ResponseEntity<List<Review>> reviewResponse = restTemplate.exchange("http://REVIEW-SERVICE/reviews?companyId=" + job.getCompany(), HttpMethod.GET, null, new ParameterizedTypeReference<List<Review>>() {
-        });
 
-        List<Review> reviews = reviewResponse.getBody();
-        JobDTO jobDTO = JobMapper.mapToJobWithComapnyDTO(job,comapny ,reviews);
+        List<Review> reviews = reviewclient.getReview( job.getCompany());
+
+       JobDTO jobDTO = JobMapper.mapToJobWithComapnyDTO(job,comapny ,reviews);
 
         return jobDTO;
     }
