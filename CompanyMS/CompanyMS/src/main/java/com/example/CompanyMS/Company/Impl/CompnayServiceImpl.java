@@ -2,6 +2,9 @@ package com.example.CompanyMS.Company.Impl;
 
 import com.example.CompanyMS.Company.Company;
 import com.example.CompanyMS.Company.CompanyService;
+import com.example.CompanyMS.Company.clients.ReviewClient;
+import com.example.CompanyMS.Company.dto.ReviewMessage;
+import jakarta.ws.rs.NotFoundException;
 import org.springframework.stereotype.Service;
 import com.example.CompanyMS.Company.CompanyRepository;
 
@@ -13,11 +16,13 @@ public class CompnayServiceImpl  implements CompanyService {
 
 
     private CompanyRepository CompanyRepository;
+    private ReviewClient reviewClient;
 
-    public CompnayServiceImpl(CompanyRepository companyRepository) {
+
+    public CompnayServiceImpl(com.example.CompanyMS.Company.CompanyRepository companyRepository, ReviewClient reviewClient) {
         CompanyRepository = companyRepository;
+        this.reviewClient = reviewClient;
     }
-
 
     @Override
     public List<Company> getAllCompanyies() {
@@ -58,6 +63,24 @@ public class CompnayServiceImpl  implements CompanyService {
         return CompanyRepository.findById(id).orElse(null);
 
     }
+
+    @Override
+    public void updateCompanyRating(ReviewMessage reviewMessage) {
+        if (reviewMessage.getCompanyId() == null) {
+            throw new IllegalArgumentException("Company ID cannot be null");
+        }
+
+        Company company = CompanyRepository.findById(reviewMessage.getCompanyId())
+                .orElseThrow(() -> new NotFoundException("Company not found: " + reviewMessage.getCompanyId()));
+
+        System.out.println(company.getDescription());
+        System.out.println("Company ID in UpdateRating" + company.getId());
+        double averageRating = reviewClient.getAverageRatingForCompany(company.getId());
+        System.out.println(averageRating);
+        company.setRating(averageRating);
+        CompanyRepository.save(company);
+    }
+
 
 
 }

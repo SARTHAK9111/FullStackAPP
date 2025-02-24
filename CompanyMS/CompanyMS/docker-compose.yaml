@@ -39,6 +39,16 @@ services:
     networks:
       - postgres_network  # Updated to match the correct network
 
+  rabbitmq:
+    image: rabbitmq:4.0-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"  # AMQP port
+      - "15672:15672"  # HTTP management console
+    networks:
+      - postgres_network
+    restart: always
+
 networks:
   postgres_network:
     driver: bridge

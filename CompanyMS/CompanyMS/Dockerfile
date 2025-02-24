@@ -1,4 +1,4 @@
-# Use the OpenJDK image as the base
+w# Use the OpenJDK image as the base
 FROM eclipse-temurin:17-jdk-alpine
 
 # Install Maven
